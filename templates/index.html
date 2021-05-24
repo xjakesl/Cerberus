@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>YoutubeDownloaderV5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="/static/assets/css/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar navbar-light navbar-expand-md">
+            <div class="container-fluid"><a class="navbar-brand" href="#"><img src="https://www.allfreevideoconverter.com/freeyoutubedownloader/features1.png" width="64px"></a><button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navcol-1">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item"><a class="nav-link active" href="#">Youtube Converter</a></li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><button class="btn btn-primary btn-danger" type="button"><i class="fas fa-donate mr-2 ml-2"></i>Donate</button></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div style="margin-top: 5px;margin-bottom: 5px;">
+            <!-- Start: Pretty Search Form -->
+            <form class="search-form" method="post">
+                <div class="input-group ml-1 mr-1">
+                        {{ form.csrf_token }}
+                        {{ form.url(class="form-control border-left") }}
+                        <div class="input-group-append">
+                            <div class="btn-group" role="group">
+                                {{ form.query(class="btn btn-danger btn-sm") }}
+                                <button id="down_all" onclick="download_all()" name="download_all" class="btn btn-danger btn-sm text-monospace" type="button"><i class="fas fa-download"></i>&nbsp;All&nbsp;</button>
+                            </div>
+                        </div>
+                </div>
+            </form>
+            {% if error %}
+            <h6 class="text-monospace ml-1 w-50 text-danger">{{ error }}</h6>
+            {% endif %}
+            <!-- End: Pretty Search Form -->
+        </div>
+        <div>
+            <table class="table table-hover">
+                <tbody id="song_holder">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal p-0" role="dialog" tabindex="-1" id="vid_details">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content"><iframe class="yt-vid modal-body" width="100%" style="text-align:center;" height="415" src="" title="YouTube video player" frameborder="0" ></iframe></div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/assets/js/modal.js"></script>
+    <script src="/static/assets/js/media_loader.js"></script>
+</body>
+
+</html>
