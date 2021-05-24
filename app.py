@@ -20,18 +20,20 @@ from pytz import utc
 from celery import Celery
 import os
 import ffmpeg
+import config as CONFIG
 
 
 """Flask Configuration."""
-file_path = os.path.join(os.getcwd(), "database")
+file_path = CONFIG.Database.path
+#file_path = os.path.join(os.getcwd(), "database")
 download_dir = os.path.join(os.getcwd(), "songs")
 
 app = Flask(__name__)
 app.config['song_dir'] = 'songs'
-app.config['CELERY_BROKER_URL'] = 'redis://192.168.10.62:6379'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://192.168.10.62:6379'
+app.config['CELERY_BROKER_URL'] = f'redis://{CONFIG.Redis.address}:{CONFIG.Redis.port}'
+app.config['CELERY_RESULT_BACKEND'] = f'redis://{CONFIG.Redis.address}:{CONFIG.Redis.port}'
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{file_path}"
-app.secret_key = "'saDJHASDFUIQhUHDad5A6D45QWDasdasdas"
+app.secret_key = f"{CONFIG.Flask.secret_key}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
