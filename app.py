@@ -343,4 +343,4 @@ def sizeof_fmt(num, suffix='B'):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host=CONFIG.Flask.address, port=CONFIG.Flask.port)

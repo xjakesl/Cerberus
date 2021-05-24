@@ -9,3 +9,5 @@ class Database:
 
 class Flask:
     secret_key = "'saDJHASDFUIQhUHDad5A6D45QWDasdasdas"
+    address = "0.0.0.0"
+    port = 80
