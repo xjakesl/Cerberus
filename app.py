@@ -1,32 +1,30 @@
-import re
-import zipfile
-from io import BytesIO
-from time import strftime, gmtime
-from urllib.request import urlopen
 from flask import Flask, render_template, request, make_response, abort, redirect, url_for, jsonify, send_from_directory
-from flask import send_file
 from models import Media, Client, MediaClientAssosciation, db
 from datetime import datetime, timedelta
-from pytube import YouTube, Playlist
-from validators import domain
 from validators.url import url as URL
-from urllib.parse import urlsplit
-from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, APIC
+from pytube import YouTube, Playlist
 from mutagen.easyid3 import EasyID3
-from forms import Video
-from uuid import uuid4
-from pytz import utc
+from urllib.request import urlopen
+from urllib.parse import urlsplit
+from mutagen.id3 import ID3, APIC
+from time import strftime, gmtime
+from validators import domain
+from flask import send_file
+from mutagen.mp3 import MP3
 from celery import Celery
-import os
-import ffmpeg
+from forms import Video
 import config as CONFIG
+from uuid import uuid4
+from io import BytesIO
+from pytz import utc
+import zipfile
+import ffmpeg
+import re, os
 
 
 """Flask Configuration."""
-file_path = CONFIG.Database.path
-#file_path = os.path.join(os.getcwd(), "database")
-download_dir = os.path.join(os.getcwd(), "songs")
+file_path = os.path.join(CONFIG.Flask.path, "database")
+download_dir = os.path.join(CONFIG.Flask.path, "songs")
 
 app = Flask(__name__)
 app.config['song_dir'] = 'songs'
@@ -341,6 +339,7 @@ def sizeof_fmt(num, suffix='B'):
         num /= 1000.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
-
+"""
 if __name__ == '__main__':
     app.run(host=CONFIG.Flask.address, port=CONFIG.Flask.port)
+"""

@@ -1,13 +1,12 @@
 class Redis:
-    address = "192.168.10.62"
+    # Redis server configuration
+    address = "127.0.0.1"
     port = 6379
 
 
-class Database:
-    path = "/root/ytd/database"
-
-
 class Flask:
-    secret_key = "'saDJHASDFUIQhUHDad5A6D45QWDasdasdas"
-    address = "0.0.0.0"
-    port = 80
+    # This is needed for CSRF Protection. Best generate very long random string and use that
+    secret_key = ""
+    # This is the path to the app directory
+    # Example: "/var/www/yourappdir"
+    path = ""
