@@ -1,6 +1,6 @@
-## T-Converter
+## Cerberus
 ___
-T-Converter is a pytube/flask based youtube to mp3 converter.
+Cerberus is a pytube/flask based youtube to mp3 converter.
 
 ###Installation
 ___
