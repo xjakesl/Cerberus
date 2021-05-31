@@ -2,7 +2,7 @@
 ___
 Cerberus is a pytube/flask based youtube to mp3 converter.
 
-###Installation
+##Installation
 
 ___
 We can start with cloning the repo with the following command: <br/>
