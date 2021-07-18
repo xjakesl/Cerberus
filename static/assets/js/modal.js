@@ -14,3 +14,7 @@ $('#vid_details').on('show.bs.modal', function (event) {
     //let title = modal.find(".modal-title")[0].innerHTML = title;
     let iframe = modal.find(".yt-vid")[0].src = url;
 })
+
+$(window).on('load', function() {
+  $('#mdb-preloader').delay(1000).fadeOut(300);
+});

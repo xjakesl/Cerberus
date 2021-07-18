@@ -4,18 +4,36 @@ function load(){
     let uid = getCookie('uid');
     let new_url = window.location.protocol + "//" + window.location.host + "/songs_list";
     jQuery.getJSON(new_url, function (data) {
-        if (data !== null) {
+        let total = data[1];
+        let bar = document.getElementById('progress-bar');
+        if (total === 0 || total === data[0].length){
+            bar.classList.remove('visible')
+            //bar.classList.remove('d-block')
+            bar.classList.add('invisible')
+            bar.classList.add('d-none')
+        }
+        else{
+            bar.classList.remove('invisible');
+            bar.classList.remove('d-none')
+            bar.classList.add('visible')
+            //bar.classList.add('d-block')
+        }
+        let bar_inner = document.getElementById('inner-progress-bar');
+        bar_inner.style.width = `${Math.trunc(data[0].length / total * 100)}%`
+        bar_inner.innerText = `${data[0].length}/${total}`
+
+        if (data[0] !== null) {
             let local_track = [];
-            for (let i = 0; i < data.length; i++) {
-                let id = data[i]['id'];
+            for (let i = 0; i < data[0].length; i++) {
+                let id = data[0][i]['id'];
                 if (document.getElementById(id.toString()) === null) {
-                    let author = data[i]['author'];
-                    let download_url = data[i]['file_name'];
-                    let yt_id = data[i]['yt_id'];
-                    let thumbnail = data[i]['thumbnail_url'];
-                    let title = data[i]['title'];
-                    let length = data[i]['length'];
-                    let size = data[i]['size'];
+                    let author = data[0][i]['author'];
+                    let download_url = data[0][i]['file_name'];
+                    let yt_id = data[0][i]['yt_id'];
+                    let thumbnail = data[0][i]['thumbnail_url'];
+                    let title = data[0][i]['title'];
+                    let length = data[0][i]['length'];
+                    let size = data[0][i]['size'];
 
                     let new_song = document.getElementById('song_holder');
                     // For each song in the JSON add table row
@@ -50,7 +68,7 @@ function load(){
                     }
                 }
                 local_track.push(id)
-                if (data[i]['downloaded'] === true){
+                if (data[0][i]['downloaded'] === true){
                     let d_btn = document.getElementById("btn-" + id);
                     d_btn.disabled = false;
                     d_btn.classList.remove('disabled');

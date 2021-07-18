@@ -35,6 +35,16 @@ app.secret_key = f"{CONFIG.Flask.secret_key}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
+class SongListZero:
+    """Exception raised if 'expected_song_count goes bellow 0'
+
+    Attributes
+    """
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
 def make_celery(flask):
     """
     Celery Configuration
@@ -50,7 +60,7 @@ def make_celery(flask):
     )
     celery_app.conf.update(
         task_routes={
-            'proj.tasks.add': {'queue': 'dev'}
+            'proj.tasks.add': {'queue': CONFIG.CelerySettings.queue}
         }
     )
 
@@ -109,7 +119,7 @@ def index():
         uid = uuid4()
         now = datetime.now(tz=utc)
         resp.set_cookie(key='uid', value=str(uid), max_age=None)
-        client = Client(session_id=str(uid), time_joined=now)
+        client = Client(session_id=str(uid), time_joined=now, expected_song_count=0)
         db.session.add(client)
         db.session.commit()
     if form.validate_on_submit():
@@ -118,16 +128,20 @@ def index():
         if video_id.get('playlist') is True:
             pl = Playlist(f"https://www.youtube.com/playlist?list={video_id.get('id')}")
             urls = pl.video_urls
+            client.expected_song_count += len(urls)
             for i, v_url in enumerate(urls):
                 if client.medias.filter(Media.yt_id == urlsplit(v_url).query.strip('v=')).first() is None:
-                    add.apply_async((v_url, uid), queue='dev')
+                    add.apply_async((v_url, uid), queue=CONFIG.CelerySettings.queue)
+                    db.session.commit()
                     # add(v_url, uid)
             return redirect(url_for('index'))
         elif video_id.get('playlist') is False:
             v_url = f"https://www.youtube.com/watch?v={video_id.get('id')}"
             if client.medias.filter(Media.yt_id == video_id.get('id')).first() is None:
                 # add(v_url, uid)
-                add.apply_async((v_url, uid), queue='dev')
+                client.expected_song_count += 1
+                add.apply_async((v_url, uid), queue=CONFIG.CelerySettings.queue)
+                db.session.commit()
             return redirect(url_for('index'))
     if len(form.errors) > 0:
         for error in form.errors.get('url'):
@@ -147,6 +161,7 @@ def song_list():
     :return:            | returns resp variable
     """
     session = request.cookies.get('uid')
+    client = db.session.query(Client).filter(Client.session_id == session).first()
     songs = db.session.query(MediaClientAssosciation).join(Client).join(Media).filter(Client.session_id == session).all()
     result = []
     for song in songs:
@@ -159,7 +174,7 @@ def song_list():
                            size=sizeof_fmt(int(song.media.size)),
                            yt_id=song.media.yt_id,
                            length=strftime("%H:%M:%S", gmtime(song.media.length))))
-    return jsonify(result)
+    return jsonify(result, client.expected_song_count)
 
 
 @app.route("/download/<path:song_name>")
@@ -177,6 +192,8 @@ def get_song(song_name):
     session = request.cookies.get('uid')
     song = db.session.query(MediaClientAssosciation).join(Client).join(Media).filter(Client.session_id == session,
                                                                                      Media.file_name == song_name).first()
+    client = db.session.query(Client).filter(Client.session_id == session).first()
+    client.expected_song_count -= 1
     db.session.delete(song)
     db.session.commit()
     return send_from_directory(app.config["song_dir"], filename=song_name, as_attachment=True)
@@ -194,6 +211,7 @@ def get_app_songs():
     """
 
     session = request.cookies.get('uid')
+    client = db.session.query(Client).filter(Client.session_id == session).first()
     songs = db.session.query(MediaClientAssosciation).join(Client).join(Media).filter(Client.session_id == session).all()
     if len(songs) != 0:
         memory_file = BytesIO()     #: Stores zip file in memory instead of Filesystem
@@ -208,6 +226,7 @@ def get_app_songs():
         memory_file.seek(0)
         for song in songs:
             db.session.delete(song)
+        client.expected_song_count = 0
         db.session.commit()
         return send_file(memory_file, attachment_filename="songs.zip", as_attachment=True)
     else:
@@ -222,7 +241,7 @@ def setup_periodic_tasks(sender, **kwargs):
     :param sender       | No idea what this is.
     :param kwargs:      | No idea what this is.
     """
-    sender.add_periodic_task(60.0, cleanup.s(), name='Cleanup', queue='dev')
+    sender.add_periodic_task(60.0, cleanup.s(), name='Cleanup', queue=CONFIG.CelerySettings.queue)
 
 
 @celery.task(name='cleanup', run_every=timedelta(minutes=1))
@@ -237,6 +256,11 @@ def cleanup():
     if len(requests) != 0:
         for req in requests:
             if tz.localize(req.request_time) < expiration_point:
+                client = db.session.query(Client).filter(Client.id == req.client_id).first()
+                if client.expected_song_count <= 0:
+                    raise SongListZero('An error occurred while subtracting song from expected_song_count(int)')
+                else:
+                    client.expected_song_count -= 1
                 db.session.delete(req)
                 db.session.commit()
 
@@ -339,7 +363,6 @@ def sizeof_fmt(num, suffix='B'):
         num /= 1000.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
-"""
-if __name__ == '__main__':
-    app.run(host=CONFIG.Flask.address, port=CONFIG.Flask.port)
-"""
+
+#if __name__ == '__main__':
+#    app.run(host='0.0.0.0', port=5000)

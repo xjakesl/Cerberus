@@ -41,6 +41,7 @@ class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.String, nullable=False)
     time_joined = db.Column(db.DateTime, nullable=False)
+    expected_song_count = db.Column(db.Integer, nullable=False)
 
     medias = db.relationship('MediaClientAssosciation', cascade='all, delete', backref=db.backref('client'), lazy='dynamic')
 
