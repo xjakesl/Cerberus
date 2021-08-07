@@ -134,9 +134,10 @@ def index():
         if video_id.get('playlist') is True:
             pl = Playlist(f"https://www.youtube.com/playlist?list={video_id.get('id')}")
             urls = pl.video_urls
-            client.expected_song_count += len(urls)
+            #client.expected_song_count += len(urls)
             for i, v_url in enumerate(urls):
                 if client.medias.filter(Media.yt_id == urlsplit(v_url).query.strip('v=')).first() is None:
+                    client.expected_song_count += 1
                     add.apply_async((v_url, uid), queue=CONFIG.CelerySettings.queue)
                     db.session.commit()
                     # add(v_url, uid)
