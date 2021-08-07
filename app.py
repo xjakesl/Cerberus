@@ -122,6 +122,12 @@ def index():
         client = Client(session_id=str(uid), time_joined=now, expected_song_count=0)
         db.session.add(client)
         db.session.commit()
+    else:
+        if not db.session.query(Client.session_id == uid).first():
+            now = datetime.now(tz=utc)
+            client = Client(session_id=uid, time_joined=now, expected_song_count=0)
+            db.session.add(client)
+            db.session.commit()
     if form.validate_on_submit():
         client = db.session.query(Client).filter(Client.session_id == str(uid)).first()
         video_id = url_format(form.url.data)
@@ -296,12 +302,13 @@ def add(v_url: str, uid: str):
         if media is None:
             """Add to DB and download files"""
             filename = re.sub(' +', ' ', re.sub("[^0-9a-zA-Z\\ \\- \\(\\)\\[\\]]+", "", video.title))
+            print(filename)
             new_media = Media(title=video.title, channel=video.author, thumbnail_url=video.thumbnail_url,
                               length=video.length, size=stream.filesize, yt_id=video.video_id, expiration=now + timedelta(hours=1),
                               file_name=filename + '.mp3')
             db.session.add(new_media)
             client.medias.append(MediaClientAssosciation(new_media, now))
-            path = stream.download(output_path=download_dir, filename=filename, skip_existing=True, max_retries=2)
+            path = stream.download(output_path=download_dir, filename=filename + '.mp4', skip_existing=True, max_retries=2)
 
             """Convert to MP3."""
             mp3_path = path.replace('.mp4', '.mp3')
@@ -315,7 +322,7 @@ def add(v_url: str, uid: str):
             if len(mt.metadata) != 0:
                 mtp = dict(
                     Song=mt.metadata[0].get('Song') if mt.metadata[0].get('Song') is not None else video.title,
-                    Artist=mt.metadata[0].get('Artist') if mt.metadata[0].get('Artist') is not None else video.author,
+                    Artist=mt.metadata[0].get('Artist').replace(',', ';') if mt.metadata[0].get('Artist') is not None else video.author,
                     Album=mt.metadata[0].get('Album') if mt.metadata[0].get('Album') is not None else "",
                 )
             else:
@@ -364,5 +371,5 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 
-#if __name__ == '__main__':
-#    app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

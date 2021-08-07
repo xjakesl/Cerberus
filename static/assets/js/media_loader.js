@@ -93,7 +93,14 @@ let interval = window.setInterval(function (){
 }, 2000)
 
 document.getElementById('down_all').addEventListener('click', function (){
-    window.location.href=`download/all`;
+    let bar = document.getElementById('progress-bar');
+    if (bar.classList.contains('visible')){
+        window.alert('Download is still in progress');
+    }
+    else {
+        window.location.href=`download/all`;
+    }
+
 })
 
 // Function for retrieving the UID from the uid cookie
