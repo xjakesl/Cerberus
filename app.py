@@ -235,7 +235,7 @@ def get_app_songs():
             db.session.delete(song)
         client.expected_song_count = 0
         db.session.commit()
-        return send_file(memory_file, attachment_filename="songs.zip", as_attachment=True, cache_timeout=0)
+        return send_file(memory_file, attachment_filename=f"{int(uuid4())}.zip", as_attachment=True, cache_timeout=0)
     else:
         abort(404)
 
