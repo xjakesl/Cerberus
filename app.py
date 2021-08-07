@@ -301,7 +301,7 @@ def add(v_url: str, uid: str):
                               file_name=filename + '.mp3')
             db.session.add(new_media)
             client.medias.append(MediaClientAssosciation(new_media, now))
-            path = stream.download(output_path=download_dir, filename=filename, skip_existing=True, max_retries=2)
+            path = stream.download(output_path=download_dir, filename=filename + '.mp4', skip_existing=True, max_retries=2)
 
             """Convert to MP3."""
             mp3_path = path.replace('.mp4', '.mp3')
